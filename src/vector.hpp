@@ -1,5 +1,5 @@
-#ifndef __VECTOR__
-#define __VECTOR__
+#ifndef __SIMPLE_VECTOR__
+#define __SIMPLE_VECTOR__
 
 #include <stddef.h>
 #include "allocator.hpp"
@@ -13,111 +13,132 @@ template <typename T, typename Alloc = alloc>
 class vector
 {
 public:
-  typedef T* iterator;
+    //typedef T* iterator;  
   typedef size_t size_type ;
   typedef T value_type; 
+  typedef value_type* pointer;
+  typedef value_type* iterator;
+  typedef value_type& refrence;
+  typedef const value_type* const_iterator;
 
 private:
   typedef allocator<T,Alloc> _allocator;
-  iterator start;
-  iterator finish;
-  iterator end_itr;
+  iterator start_;
+  iterator pos_;
+  iterator end_;
 
 protected:
-  // iterator allocate_and_fill(size_type n, const T& value) 
-  // {
-  //   iterator result = _allocator::allocate(n);
-  //   fill_n(result, n, value);
-  //   return result;
-  // }
 
-iterator allocate_and_fill(size_type n, const T& value) 
-{
+  iterator allocate_and_fill(size_type n, const T& value) 
+  {
     iterator result = _allocator::allocate(n);
     fill_n(result, n, value);
     return result;
-}
-void destroy_and_deallocate(iterator start, iterator end) 
-{
-    destroy(start, end);
-    _allocator::deallocate(start);
-}
-void copy(iterator start, iterator end, iterator new_start)
-{
+  }
+
+  void copy(iterator start, iterator end, iterator new_start)
+  {
     while (start != end)
     {
       fill_n(new_start, 1, *start);
       start++;
     }
-}
-
-
-
-
-
-
+  }
 
 public:
-  vector():start(0),finish(0),end_itr(0) 
+  vector():start_(0),pos_(0),end_(0) 
   {
   }
 
   vector(size_type n, const T& value) 
   {
-    iterator itr=allocate_and_fill(n, value);
-    start=itr;
-    finish=itr+n;
-    end_itr=finish;
+        iterator itr=allocate_and_fill(n, value);
+        start_ = itr;
+        pos_ = itr+n;
+        end_ = pos_;
   }
 
-  ~vector() 
-  {
-    destroy_and_deallocate(start ,finish);
-  }
+    ~vector() 
+    {
+      if (start_ > 0)
+      {
+        destroy(start_ ,pos_);
+        _allocator::deallocate(start_);
+      }
+    }
 
   bool empty() 
   {
-    return start==finish;
+    return start_ == pos_;
   }
 
-  size_type size() 
+  size_type size() const
   {
-    return static_cast<size_type>(finish-start);
+    return static_cast<size_type>(pos_ - start_);
   }
 
-  size_type capacity() 
+  size_type capacity() const
   {
-    return end_itr-start;
+    return end_ - start_;
   }
-  iterator begin()
+
+  iterator begin() 
   {
-    return start;
+    return start_;
   }
+
+  const_iterator begin() const 
+  {
+    return start_;
+  }
+
   iterator end()
   {
-    return finish;
+    return pos_;
   }
-  value_type& operator[](size_type n) 
+
+  const_iterator end() const 
   {
-    return *(start+n);
+    return pos_;
+  }
+
+  refrence operator[](size_type n) 
+  {
+    return *(start_ + n);
+  }
+
+  refrence front()
+  {
+    return *begin();
+  }
+
+  refrence back()
+  {
+    return *(end() - 1);
   }
 
   void push_back(const T& value)
   {
     
-    if (end_itr == finish)
+    if (end_ == pos_)
     {
       size_type n = this->size();
       iterator new_start = _allocator::allocate(2 * n);
-      copy(start, finish, new_start);
-      destroy_and_deallocate(start, finish);
-      start = new_start;
-      finish = start + n;
-      end_itr = start + 2 * n;
+      copy(start_, pos_, new_start);
+      //destroy_and_deallocate(start_, pos_);
+      destroy(start_ ,pos_);
+      _allocator::deallocate(start_);
+      start_ = new_start;
+      pos_ = start_ + n;
+      end_ = start_ + 2 * n;
     }
-    fill_n(finish++, 1, value);
+    fill_n(pos_++, 1, value);
   }
 
+  iterator data()
+  {
+    return start_;
+  }
 
 };
 
