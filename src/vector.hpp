@@ -42,6 +42,7 @@ protected:
     {
       fill_n(new_start, 1, *start);
       start++;
+      new_start++;
     }
   }
 
@@ -123,14 +124,14 @@ public:
     if (end_ == pos_)
     {
       size_type n = this->size();
-      iterator new_start = _allocator::allocate(2 * n);
+      int new_capacity = (0 == n ? 1 : n * 2);
+      iterator new_start = _allocator::allocate(new_capacity);
       copy(start_, pos_, new_start);
-      //destroy_and_deallocate(start_, pos_);
-      destroy(start_ ,pos_);
+      destroy(start_ , pos_);
       _allocator::deallocate(start_);
       start_ = new_start;
       pos_ = start_ + n;
-      end_ = start_ + 2 * n;
+      end_ = start_ + new_capacity;
     }
     fill_n(pos_++, 1, value);
   }
