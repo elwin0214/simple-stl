@@ -30,7 +30,7 @@ http://blog.csdn.net/gabriel1026/article/details/6311339
 #define IS_RIGHT_CHILD(node)  ((head_ != (node)->parent) && ((node)->parent->right == (node)))
 
 
-#define LOG_DEBUG(fmt,...) fprintf(stdout, fmt, ##__VA_ARGS__)
+//#define LOG_DEBUG(fmt,...) fprintf(stdout, fmt, ##__VA_ARGS__)
 
 namespace simple{
 
@@ -98,37 +98,16 @@ public:
             //root node without right child, will not go here,
             //the right child of the most right node of tree will be assign to the member variable - head_
             else
-            {   //#ifdef DEBUG
+            {   
+                #ifdef LOG_DEBUG
                 LOG_DEBUG("wont go there");
-                //#endif
+                #endif
             }
         }
         node_ptr_ = node_ptr;
     }
 
-    // void decrease()
-    // {
-    //     node_ptr_type node_ptr = node_ptr_;
-    //     if (node_ptr->left != NULL)
-    //     {
-    //         node_ptr = node_ptr->left;
-    //         while (node_ptr->right != NULL)
-    //             node_ptr = node_ptr->right;
-    //     }
-    //     else//无左子树
-    //     {
-    //         if (IS_RIGHT_CHILD(node_ptr))
-    //         {
-    //             node_ptr = node_ptr->parent;
-    //         }
-    //         else
-    //         {
-    //             node_ptr = head_; //已经到了根节点或者最左节点
-    //         }
-    //         node_ptr = node_ptr->parent;
-    //     }
-    //     node_ptr_ = node_ptr;
-    // }
+  
 
 
 public:
@@ -200,26 +179,33 @@ private:
     };
 
 public:
-    avltree():head_(create())
+    avltree():head_(alloc())
     {
         head_->left = head_;
         head_->right = head_;
+        head_->parent = NULL;
     }
 
     ~avltree()
     {
         //不能类似于list迭代回收内存
         //因为迭代加，会走析构过的内存。
-        //iterator itr = begin();
-        //iterator end_itr = end();
+        if (EXIT_ROOT())
+        {
+            free(head_->parent);
+        }
+        dealloc(head_);
+    }
 
-        // for (; itr != end_itr; )
-        // {
-        //     iterator tmp = itr;
-        //     ++itr;
-        //     destory_node(tmp.node_ptr_);
-        // }
-        // _allocator::deallocate(head_);
+    void free(node_ptr_type node_ptr)
+    {
+        if (NULL == node_ptr) return;
+        node_ptr_type left = node_ptr->left;
+        node_ptr_type right = node_ptr->right;
+        destory_node(node_ptr);
+        dealloc(node_ptr);
+        free(left);
+        free(right);
     }
 
     iterator begin()
@@ -238,12 +224,13 @@ public:
     }
 
     void insert(const Value &value)
-    {
-        //std::cout<<key_of_value_(value)<<std::endl;
+    {   
         if (!EXIT_ROOT())
         {
+            #ifdef LOG_DEBUG
             LOG_DEBUG("insert, root, key=%d\n", key_of_value_(value));
-            node_ptr_type node_ptr = create_and_fill(value);
+            #endif
+            node_ptr_type node_ptr = alloc_and_fill(value);
             node_ptr->parent = head_;
 
             head_->left = node_ptr;
@@ -251,45 +238,91 @@ public:
             head_->parent = node_ptr;
             return;
         }
-        node_ptr_type node = getRoot();
-
-        while (node != NULL)
+        node_ptr_type node_ptr = getRoot();
+        while (node_ptr != NULL)
         {
-
-            if (compare_(key_of_value_(value), key_of_value_(node->data)))
+            bool value_less = compare_(key_of_value_(value), key_of_value_(node_ptr->data));
+            bool data_less = compare_(key_of_value_(node_ptr->data), key_of_value_(value));
+            if ( value_less && !data_less)
             {
-                if (node->left != NULL) node = node->left;
+                if (node_ptr->left != NULL) node_ptr = node_ptr->left;
                 else 
                 {
+                    #ifdef LOG_DEBUG
                     LOG_DEBUG("insert, left, key=%d\n", key_of_value_(value));
-                    node_ptr_type new_node = add_node_left(node, value);//更新head_->left
+                    #endif
+                    node_ptr_type new_node = add_node_left(node_ptr, value);//更新head_->left
                     reset_head_children(new_node);
                     
                     return;
                 }
             }
-            else
+            else if (data_less && !value_less)
             {
-                    LOG_DEBUG("insert, right, key=%d\n", key_of_value_(value));
-                    if (node->right != NULL) node = node->right;
-                    else
-                    {
-                        node_ptr_type new_node = add_node_right(node, value);
-                        
-                        reset_head_children(new_node);
-                        return;
-                    }
+                #ifdef LOG_DEBUG
+                LOG_DEBUG("insert, right, key=%d\n", key_of_value_(value));
+                #endif
+                if (node_ptr->right != NULL) node_ptr = node_ptr->right;
+                else
+                {
+                    node_ptr_type new_node = add_node_right(node_ptr, value);
+                    
+                    reset_head_children(new_node);
+                    return;
+                }
+            }
+            else if (!value_less && !data_less)
+            {
+                // height  take into account
+                destory_node(node_ptr);
+                fill_n(&(node_ptr->data), 1, value);
+                return;
             }
         }
             
     }
+
+    void erase(const iterator &itr)
+    {
+
+       node_ptr_type node_ptr= itr.node_ptr_;
+       if (NULL == node_ptr || IS_HEAD_NODE(node_ptr)) return;
+       if (node_ptr->left != NULL && node_ptr->right != NULL)
+       {
+            node_ptr_type closed_greater_ptr = get_most_left_node(node_ptr->right);//exist definitely
+            swap_node(closed_greater_ptr, node_ptr);
+       }
+        node_ptr_type left = node_ptr->left;
+        node_ptr_type right = node_ptr->right;
+        node_ptr_type parent = node_ptr->parent;
+        node_ptr_type existed_child = (NULL != left ? left : right);//only one or not exist
+        if (IS_LEFT_CHILD(node_ptr))
+        {
+            parent->left = existed_child;
+        }
+        else
+        {
+            parent->right = existed_child;
+        }
+        existed_child->parent = parent;
+        destory_node(node_ptr);
+        dealloc(node_ptr);
+        count_and_rotate_after_remove(parent);
+        reset_head_children(NULL);
+    }
+
 private:
-    node_ptr_type create()
+    node_ptr_type alloc()
     {
         return _allocator::allocate(1);
     }
 
-    node_ptr_type create_and_fill(const Value& value) 
+    void dealloc(node_ptr_type node_ptr)
+    {
+        _allocator::deallocate(node_ptr);
+    }
+
+    node_ptr_type alloc_and_fill(const Value& value) 
     {
         node_ptr_type result = _allocator::allocate(1);
         //construct((&(result->data)), value);//如果直接在成员data上构造，node里面的指针没有初始化，导致有bug
@@ -297,10 +330,16 @@ private:
         return result;
     }
 
-    void destory_node(node_ptr_type node)
+    void destory_node(node_ptr_type node_ptr)
     {
-        destroy(&(node->data));
-        _allocator::deallocate(node);
+        destroy(&(node_ptr->data));
+    }
+
+    void swap_node(node_ptr_type &node_ptr_1, node_ptr_type &node_ptr_2)
+    {
+        std::swap(node_ptr_1->data, node_ptr_2->data);
+        std::swap(node_ptr_1->height, node_ptr_2->height);
+        std::swap(node_ptr_1, node_ptr_2);
     }
 
     node_ptr_type get_most_left_node(node_ptr_type node)
@@ -323,7 +362,7 @@ private:
 
     node_ptr_type add_node_left(node_ptr_type node, const Value &t)
     {
-        node_ptr_type result = create_and_fill(t);
+        node_ptr_type result = alloc_and_fill(t);
         node->left = result;
         node->left->parent = node;
         int before_height = node->height;
@@ -335,7 +374,7 @@ private:
 
     node_ptr_type add_node_right(node_ptr_type node, const Value &t)
     {
-        node_ptr_type result = create_and_fill(t);
+        node_ptr_type result = alloc_and_fill(t);
         node->right = result;
         node->right->parent = node;
         int before_height = node->height;
@@ -344,6 +383,16 @@ private:
         count_and_rotate(node);
         return result;
     }
+
+
+    void count_and_rotate_after_remove(node_ptr_type node)
+    {
+        int before_height = node->height;
+        int cur_height = recount_height(node);
+        if (cur_height == before_height) return ; //无需旋转
+        count_and_rotate(node);
+    }
+
 
     void count_and_rotate(node_ptr_type node)
     {
@@ -389,11 +438,15 @@ private:
         if (IS_HEAD_NODE(parent))//新的树根节点  head_ == parent
         {
             head_->parent = child;
+            #ifdef LOG_DEBUG
             LOG_DEBUG("set_to_child, root, key=%d\n", key_of_value_(child->data));
+            #endif
         }
         else//根据当前是在parent节点下左子树还是右子树 进行替换
         {
+            #ifdef LOG_DEBUG
             LOG_DEBUG("set_to_child, key=%d, parent=%d\n", key_of_value_(child->data), key_of_value_(parent->data));
+            #endif
 
             if (LEFT == (st_ptr))
             {
@@ -408,13 +461,15 @@ private:
     /*根据左右子树的高度大小判断旋转方式*/
     void rotate(node_ptr_type node, SubTreeType st)
     {
+        #ifdef LOG_DEBUG
         LOG_DEBUG("rotate, key=%d\n", key_of_value_(node->data));
+        #endif
         /*当前旋转的节点node 所处的子树是左子树还是右子树*/
         SubTreeType rotate_tree_type = DIRECT;
         //if (NULL != node->parent)//??
         //{
         //the parent node of this sub-tree should choose a new node as child after rotate.
-        //but we should know which child it is.
+        //rotate_tree_type is used to record which child we shuould take as.
         rotate_tree_type = node->parent->left == node ? (LEFT) : (RIGHT); 
         //}
         if (st == LEFT)//左子树高度大
@@ -422,7 +477,7 @@ private:
             node_ptr_type parent = node->parent;
             node_ptr_type left = node->left;
             node_ptr_type left_right = left->right;
-            if (LEFT_SUB_HEIGHT(node->left) > RIGHT_SUB_HEIGHT(node->left)) /*LL*/
+            if (LEFT_SUB_HEIGHT(node->left) > RIGHT_SUB_HEIGHT(node->left)) //LL- 由子树的左子树决定
             {
                 //left -> root
                 set_to_ltree(left_right, node);
@@ -458,7 +513,7 @@ private:
             node_ptr_type right = node->right;
             node_ptr_type right_left = right->left;
 
-            if (LEFT_SUB_HEIGHT(node->right) > RIGHT_SUB_HEIGHT(node->right))
+            if (LEFT_SUB_HEIGHT(node->right) > RIGHT_SUB_HEIGHT(node->right))//RR
             {
                 //right_left -> root
                 set_to_ltree(right_left->right, right);
@@ -490,35 +545,8 @@ private:
     {
         head_->left = get_most_left_node(getRoot());
         head_->right = get_most_right_node(getRoot());
-        // if (IS_LEFT_CHILD(new_node) && new_node->left == NULL)//bug
-        // {
-        //     head_->left = new_node;
-        //     return;
-        // }
-        // if (IS_RIGHT_CHILD(new_node) && new_node->right == NULL)
-        // {
-        //     head_->right = new_node;
-        //     return;
-        // }
+       
     }
-
-public:
-        void debug_in_trav(){
-            debug_in_trav(getRoot());
-            std::cout<<std::endl;
-        }
-        void debug_in_trav(node_ptr_type node){
-            if (NULL == node)
-            {
-                return;
-            }
-            debug_in_trav(node->left);
-            std::cout << ((node->data)) <<"("<< (node->height)<<") ";
-            debug_in_trav(node->right);
-        }
-
-
-};
 
 }
 #endif
