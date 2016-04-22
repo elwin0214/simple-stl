@@ -1,6 +1,7 @@
 /*
-
-http://blog.csdn.net/gabriel1026/article/details/6311339
+  平衡树，有个一个无不存储实际值的节点head_,该节点left、right分别指向最小、最大节点
+  parent指向树的根节点。
+  http://blog.csdn.net/gabriel1026/article/details/6311339
 */
 
 #ifndef __AVL_TREE__
@@ -16,10 +17,8 @@ http://blog.csdn.net/gabriel1026/article/details/6311339
 #define RIGHT_SUB_HEIGHT(node) ((node)->right == NULL ? 0 : (node->right)->height)
 
 #define IS_ROOT_NODE(node) (head_->parent == (node))
-//#define IS_ROOT_NODE(node) (root_ == (node))
 
 #define IS_HEAD_NODE(node) (head_ == (node))
-
 #define EXIT_ROOT() (head_->parent != NULL)
 
 #define IS_FIRST_NODE(node) (head_->left == (node))
@@ -43,14 +42,13 @@ struct treenode
     treenode<Value> *right;
     Value data;
     int height;
-//private 声明 friend avltree  异常
 public:
     treenode(const Value& data):data(data),parent(NULL),left(NULL),right(NULL),height(1){
         
     }
 };
 
-
+//iterator包含2个指针，一个指向当前节点，另外一个指向head_节点，便于迭代运算。
 template <typename Value>
 struct treenode_iterator
 {
@@ -276,12 +274,56 @@ public:
                 // height  take into account
                 destory_node(node_ptr);
                 fill_n(&(node_ptr->data), 1, value);
-                return;
+                return ;
             }
+            else
+            {
+                return ;//the compare is defined in error.
+            }
+
         }
             
     }
 
+    iterator find(Key key)
+    {
+        if (!EXIT_ROOT())
+        {
+            return end();
+        }
+        node_ptr_type node_ptr = getRoot();
+        while (node_ptr != NULL)
+        {
+            bool value_less = compare_(key, key_of_value_(node_ptr->data));
+            bool data_less = compare_(key_of_value_(node_ptr->data), key);
+            if ( value_less && !data_less)
+            {
+                if (node_ptr->left != NULL) node_ptr = node_ptr->left;
+                else return end();
+            }
+            else if (data_less && !value_less)
+            {
+                
+                if (node_ptr->right != NULL) node_ptr = node_ptr->right;
+                else return end();
+            }
+            else if (!value_less && !data_less)
+            {
+                 
+                return iterator(head_, node_ptr);
+            }
+            else
+            {
+                return end();//the compare is defined in error.
+            }
+
+        }
+        return end();
+    }
+    /*删除节点分2种情况
+      1.节点是叶节点，节点有一个子节点，直接删除，节点被子树替代，迭代寻找parent节点，计算height，进行旋转
+      2.节点有左右子节点，用大于当前节点的最小节点（属于1的情况）进行交换，然后采取1的策略处理。
+    */
     void erase(const iterator &itr)
     {
 
@@ -304,7 +346,7 @@ public:
         {
             parent->right = existed_child;
         }
-        existed_child->parent = parent;
+        if (NULL != existed_child) existed_child->parent = parent;
         destory_node(node_ptr);
         dealloc(node_ptr);
         count_and_rotate_after_remove(parent);
@@ -338,7 +380,7 @@ private:
     void swap_node(node_ptr_type &node_ptr_1, node_ptr_type &node_ptr_2)
     {
         std::swap(node_ptr_1->data, node_ptr_2->data);
-        std::swap(node_ptr_1->height, node_ptr_2->height);
+        //std::swap(node_ptr_1->height, node_ptr_2->height);
         std::swap(node_ptr_1, node_ptr_2);
     }
 
@@ -385,28 +427,36 @@ private:
     }
 
 
+    //删除与插入的旋转不同，删除时，height已经不准确，需要先计算再旋转。
     void count_and_rotate_after_remove(node_ptr_type node)
     {
-        int before_height = node->height;
-        int cur_height = recount_height(node);
-        if (cur_height == before_height) return ; //无需旋转
-        count_and_rotate(node);
+        while (!IS_HEAD_NODE(node)) //node!=NULL
+        {
+            int lh = LEFT_SUB_HEIGHT(node);
+            int rh = RIGHT_SUB_HEIGHT(node);
+            node->height = std::max(lh, rh) + 1;
+            if (abs(lh - rh) >= 2)
+            {
+                rotate(node, (lh > rh ? LEFT : RIGHT));//可能不需要一直循环下去
+            }            
+            node = node->parent;
+        }
     }
-
 
     void count_and_rotate(node_ptr_type node)
     {
-        //cout<<"count ratate "<<(node->data)<<endl;
         while (!IS_HEAD_NODE(node)) //node!=NULL
         {
-            int lh = LEFT_SUB_HEIGHT(node);//node->left == NULL ? 0 : node->left->height;
-            int rh = RIGHT_SUB_HEIGHT(node);//node->right == NULL ? 0 : node->right->height;
+            int lh = LEFT_SUB_HEIGHT(node);
+            int rh = RIGHT_SUB_HEIGHT(node);
             if (abs(lh - rh) >= 2)
             {
                 rotate(node, (lh > rh ? LEFT : RIGHT));
                 return;//only one node need to be rotate 
             }
+            //int before_height = node->height;
             node->height = std::max(lh, rh) + 1;
+            //if (before_height == node->height) return;
             node = node->parent;
 
         }
@@ -547,6 +597,9 @@ private:
         head_->right = get_most_right_node(getRoot());
        
     }
+
+
+};
 
 }
 #endif
