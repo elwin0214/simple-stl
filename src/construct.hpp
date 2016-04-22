@@ -9,9 +9,7 @@ template <typename T>
 void construct(T *ptr, const T &t) {
     new((void*)ptr) T(t);
 }
-/*
-兼容TreeNode<T>* ,T
-*/
+
 template <typename N,typename T>
 void construct(N *ptr, const T &t) {
     new((void*)ptr) N(t);
@@ -31,9 +29,7 @@ void destroy(T *ptr) {
     ptr->~T();
 }
 
-
-
-
+//萃取对象类型，如果是pod，无须调用析构函数
 template <typename Iterator>
 void __destroy(Iterator first, Iterator last, const __false_pod_type__ &) {
 

@@ -9,7 +9,7 @@ template <typename Iterator, typename Size, typename T>
 void _fill_n(Iterator itr, Size n, const T& value)
 {
   Iterator start=itr;
-  for(; n>0; n--,start++) 
+  for(; n>0; n--, start++) 
   {
     construct(&*start, value);
   }
@@ -20,10 +20,6 @@ void fill_n(Iterator itr, Size n, const T& value)
 {
   _fill_n(itr, n, value);
 }
-
- 
-
-
 
 
 }

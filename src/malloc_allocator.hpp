@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <iostream>
+#include <stdlib.h>
 
 namespace simple
 {
