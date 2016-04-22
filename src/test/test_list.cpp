@@ -4,8 +4,6 @@
 
 using namespace std;
 
- 
-
 struct test_list : public Test::Suite
 {
  
@@ -71,17 +69,12 @@ struct test_list : public Test::Suite
     }
   }
   
- 
-
   test_list()
   {
     TEST_ADD(test_list::test_push_back);
     TEST_ADD(test_list::test_iterator);
     TEST_ADD(test_list::test_const_iterator);
     TEST_ADD(test_list::test_iterator_set);
-
-
-    
   }
 };
 

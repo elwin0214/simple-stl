@@ -33,9 +33,6 @@ public:
   {
     return value;
   }
-
-
-
 };
 
 struct test_vector : public Test::Suite
@@ -77,7 +74,6 @@ struct test_vector : public Test::Suite
     simple::vector<int> v;
     for (int i = 0; i < 100; i++)
       v.push_back(i);
-   
     int index = 0;
     for (simple::vector<int>::iterator itr = v.begin();
       itr != v.end(); itr++)
@@ -85,7 +81,6 @@ struct test_vector : public Test::Suite
       TEST_ASSERT( (index++) == (*itr));
       //std::cout <<"test_iterator "<<(*itr) <<std::endl;
     }
-
   }
 
   void test_const_iterator()
@@ -99,11 +94,7 @@ struct test_vector : public Test::Suite
     {
       std::cout <<"test_const_iterator "<<(itr->getValue()) <<std::endl;
     }
-
   }
-
-   
- 
 
   test_vector()
   {
@@ -111,12 +102,9 @@ struct test_vector : public Test::Suite
     TEST_ADD(test_vector::test_push_back);
     TEST_ADD(test_vector::test_empty_push_back);
     TEST_ADD(test_vector::test_iterator);
-    TEST_ADD(test_vector::test_const_iterator);
-
-    
-
-    
+    TEST_ADD(test_vector::test_const_iterator);  
   }
+
 };
 
 int main()

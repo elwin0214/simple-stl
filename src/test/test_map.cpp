@@ -15,8 +15,6 @@ struct test_map : public Test::Suite
         {
             map.insert(smap::value_type(i, i));
         }
-        
-
     }
 
     void test_iterator()
@@ -50,9 +48,6 @@ struct test_map : public Test::Suite
         itr = map.find(6);
         TEST_ASSERT(map.end() == (itr));
     }
-
-    
-
 
     test_map()
     {
