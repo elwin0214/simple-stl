@@ -4,6 +4,7 @@
 
 #include "algorithm/functional.hpp"
 #include "avltree.hpp"
+#include "nocopyable.hpp"
 
 namespace simple{
 
@@ -36,7 +37,7 @@ struct map_pair
  
 
 template<typename K, typename T, typename Compare = less<K>, typename Alloc = alloc>
-class map
+class map : public nocopyable
 {
 public:
     typedef map_pair<K, T> value_type;

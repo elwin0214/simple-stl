@@ -5,6 +5,7 @@
 #include "allocator.hpp"
 #include "data_fill.hpp"
 #include "algorithm/base.hpp"
+#include "nocopyable.hpp"
 #include <iostream>
 
 namespace simple
@@ -93,7 +94,7 @@ public:
 
 
 template <typename T, typename Alloc = alloc>
-class list
+class list : public nocopyable
 {
 
 private:

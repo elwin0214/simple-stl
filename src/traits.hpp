@@ -1,8 +1,6 @@
 #ifndef __SIMPLE_TRAITS__
 #define __SIMPLE_TRAITS__
 
- 
-
 namespace simple 
 {
 

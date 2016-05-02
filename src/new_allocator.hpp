@@ -1,3 +1,6 @@
+#ifndef __SIMPLE_NEW_ALLOCATOR__
+#define __SIMPLE_NEW_ALLOCATOR__
+
 #include <stddef.h>
 #include <iostream>
 
@@ -32,3 +35,5 @@ public:
 
 };
 }
+
+#endif

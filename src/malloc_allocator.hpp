@@ -1,5 +1,5 @@
-#ifndef __MALLOC__ALLOCATOR__
-#define __MALLOC__ALLOCATOR__
+#ifndef __SIMPLE_MALLOC_ALLOCATOR__
+#define __SIMPLE_MALLOC_ALLOCATOR__
 
 #include <stddef.h>
 #include <iostream>

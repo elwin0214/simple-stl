@@ -4,13 +4,13 @@
 #include <stddef.h>
 #include "allocator.hpp"
 #include "data_fill.hpp"
-
+#include "nocopyable.hpp"
 
 namespace simple
 {
 
 template <typename T, typename Alloc = alloc>
-class vector
+class vector : public nocopyable
 {
 public:
     //typedef T* iterator;  

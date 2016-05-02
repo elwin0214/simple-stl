@@ -1,17 +1,19 @@
 /*
   平衡树，有个一个无不存储实际值的节点head_,该节点left、right分别指向最小、最大节点
   parent指向树的根节点。
-  http://blog.csdn.net/gabriel1026/article/details/6311339
+  旋转方式见：http://blog.csdn.net/gabriel1026/article/details/6311339
 */
 
 #ifndef __AVL_TREE__
 #define __AVL_TREE__
 
 #include <cmath>
-#include "allocator.hpp"
-#include "data_fill.hpp"
 #include <iostream>
 #include <stdio.h>
+#include "allocator.hpp"
+#include "data_fill.hpp"
+#include "nocopyable.hpp"
+
 
 #define LEFT_SUB_HEIGHT(node) ((node)->left == NULL ? 0 : (node->left)->height)
 #define RIGHT_SUB_HEIGHT(node) ((node)->right == NULL ? 0 : (node->right)->height)
@@ -151,7 +153,7 @@ public:
 
 
 template<typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc = alloc>
-class avltree
+class avltree : public nocopyable
 {
 
 public:
