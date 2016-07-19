@@ -2,7 +2,7 @@
 #include "../construct.hpp"
 #include "../vector.hpp"
 #include <cmath>    
-#include "cpptest.h"
+#include <cpptest.h>
 using namespace std;
 
 class TestInt

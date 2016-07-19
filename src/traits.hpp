@@ -26,10 +26,6 @@ struct type_traits<int>//int type
     typedef __true_pod_type__ is_pod_type;
 };
 
-
-
-
-
 }
 
 #endif

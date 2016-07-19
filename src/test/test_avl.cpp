@@ -1,8 +1,9 @@
 #include <iostream>
 #include <unistd.h>
-#include "cpptest.h"
-#define LOG_DEBUG(fmt,...) fprintf(stdout, fmt, ##__VA_ARGS__)
+#include <cpptest.h>
 #include "../avltree.hpp"
+
+#define LOG_DEBUG(fmt,...) fprintf(stdout, fmt, ##__VA_ARGS__)
 
 using namespace std;
 struct Compare

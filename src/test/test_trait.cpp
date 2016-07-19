@@ -1,8 +1,8 @@
 #include <iostream>
-/**
-  test trait
-  get the information of target type of iterator
-*/
+//
+//  test trait
+//  get the information of target type of iterator
+//
 using namespace std;
 namespace test
 {
@@ -33,13 +33,13 @@ void check(false_pod )
 template<typename T>
 struct type_trait
 {
-    typedef false_pod pod_type;
+    typedef false_pod pod_type;  // default - false
 };
 
 template<typename T>
 struct type_trait<T*>
 {
-    typedef true_pod pod_type;
+    typedef true_pod pod_type;  // pointer - true
 };
 
 //template<typename T>
@@ -100,7 +100,5 @@ int main()
     int *p = 0;
     test::check_pod_type2<int*>(p);
     test::check_pod_type2(test::CharIterator());
-    
-    
     return 0;
 }

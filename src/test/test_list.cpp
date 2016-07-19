@@ -1,6 +1,6 @@
 #include "../list.hpp"
 #include <iostream>
-#include "cpptest.h"
+#include <cpptest.h>
 
 using namespace std;
 

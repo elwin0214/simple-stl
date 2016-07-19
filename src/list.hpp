@@ -10,9 +10,9 @@
 
 namespace simple
 {
-/**
-  list node
-*/
+//
+// list node
+//
 template <typename T>
 struct _list_node
 {
@@ -22,9 +22,9 @@ struct _list_node
   _list_node():before(NULL),after(NULL){}
 
 };
-/**
- list iterator
-*/
+//
+// list iterator
+//
 template <typename T, typename Ref, typename Ptr>
 struct _list_iterator 
 {
